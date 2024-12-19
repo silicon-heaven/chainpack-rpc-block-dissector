@@ -92,7 +92,7 @@ local function parse_angle_brackets(content, payload_subtree)
 
 end
 
-local function dissect_chainpack_message(tvb, pinfo, tree)
+local function dissect_chainpack_message(tvb, tree)
     local payload = tvb:bytes()
     local output, exit_code = run_cp2cp(payload)
 
@@ -147,7 +147,7 @@ function chainpack_proto.dissector(tvb, pinfo, tree)
     local bytes_consumed = 0
     while bytes_consumed < tvb:len() do
         local input = tvb(bytes_consumed):tvb()
-        local segment_length, block_length = dissect_chainpack_message(input, pinfo, tree)
+        local segment_length, block_length = dissect_chainpack_message(input, tree)
         if segment_length == 0 then
             pinfo.desegment_len = block_length and block_length - input:len() or DESEGMENT_ONE_MORE_SEGMENT
             pinfo.desegment_offset = bytes_consumed
