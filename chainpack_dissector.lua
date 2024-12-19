@@ -82,12 +82,16 @@ local function parse_angle_brackets(content, payload_subtree)
 
     if rqid and method then
         payload_subtree:set_text(string.format("RPC Request (%s)", rqid))
+        payload_subtree:add(fields.message_type, "Request")
     elseif rqid and not method then
         payload_subtree:set_text(string.format("RPC Response (%s)", rqid))
+        payload_subtree:add(fields.message_type, "Response")
     elseif not rqid and method then
         payload_subtree:set_text(string.format("RPC Signal (%s)", method))
+        payload_subtree:add(fields.message_type, "Signal")
     else
         payload_subtree:set_text("Unknown RPC message type")
+        payload_subtree:add(fields.message_type, "Unknown")
     end
 
 end
