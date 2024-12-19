@@ -58,18 +58,19 @@ local function run_cp2cp(payload)
     return output, exit_code
 end
 
-local function parse_angle_brackets(content, subtree)
+local function parse_angle_brackets(content, payload_subtree)
     local pattern = "(%d+):([^,]+)"
+
     for attribute, value in content:gmatch(pattern) do
         local attr_id = tonumber(attribute)
         if attr_id == 1 then
-            subtree:add(fields.meta_type_id, tonumber(value))
+            payload_subtree:add(fields.meta_type_id, tonumber(value))
         elseif attr_id == 8 then
-            subtree:add(fields.request_id, tonumber(value))
+            payload_subtree:add(fields.request_id, tonumber(value))
         elseif attr_id == 9 then
-            subtree:add(fields.shv_path, value)
+            payload_subtree:add(fields.shv_path, value)
         elseif attr_id == 10 then
-            subtree:add(fields.method_signal, value)
+            payload_subtree:add(fields.method_signal, value)
         end
     end
 end
@@ -111,11 +112,12 @@ local function dissect_chainpack_message(tvb, pinfo, tree)
     block_subtree:add(fields.block_length, tvb(0, block_length), block_length)
     block_subtree:add(fields.payload_length, tvb(0, block_length - payload_length), payload_length)
     block_subtree:add(fields.protocol_type, tvb(block_length - payload_length, 1), protocol_type)
-    block_subtree:add(fields.payload, tvb(block_length - payload_length + 1), payload_data)
+
+    local payload_subtree = block_subtree:add(fields.payload, tvb(block_length - payload_length + 1), payload_data)
 
     local angle_brackets_content = payload_data:match("<([^>]+)>")
     if angle_brackets_content then
-        parse_angle_brackets(angle_brackets_content, block_subtree)
+        parse_angle_brackets(angle_brackets_content, payload_subtree)
     end
 
     return block_length
