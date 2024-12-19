@@ -1,5 +1,9 @@
+-- Determine the cp2cp command
+local CP2CP_COMMAND = os.getenv("WIRESHARK_CP2CP_COMMAND") or "cp2cp"
+
+-- Check if cp2cp is in PATH or provided via ENV
 local function is_cp2cp_available()
-    local process = io.popen("which cp2cp 2>/dev/null", "r")
+    local process = io.popen(string.format("which %s 2>/dev/null", CP2CP_COMMAND), "r")
     if not process then
         return false
     end
@@ -9,7 +13,7 @@ local function is_cp2cp_available()
 end
 
 if not is_cp2cp_available() then
-    error("cp2cp tool is not available in PATH. Please install or add it to PATH.")
+    error(string.format("%s tool is not available in PATH or specified via $WIRESHARK_CP2CP_COMMAND. Please install or configure it.", CP2CP_COMMAND))
 end
 
 -- Declare the Chainpack-RPC-Block protocol
@@ -36,7 +40,7 @@ local CP2CP_EXIT_CODES = {
 -- Function to decode Chainpack payload using cp2cp tool
 local function run_cp2cp(payload)
     local tmpfile = os.tmpname()
-    local command = string.format("cp2cp --chainpack-rpc-block < %s", tmpfile)
+    local command = string.format("%s --chainpack-rpc-block < %s", CP2CP_COMMAND, tmpfile)
 
     -- Write payload to temporary file
     local file = io.open(tmpfile, "wb")
