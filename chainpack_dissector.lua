@@ -19,7 +19,11 @@ local fields = {
     block_length = ProtoField.uint32("chainpack-rpc-block.block_length", "Block Length", base.DEC),
     payload_length = ProtoField.uint32("chainpack-rpc-block.payload_length", "Payload Length", base.DEC),
     protocol_type = ProtoField.string("chainpack-rpc-block.protocol_type", "Protocol Type"),
-    payload = ProtoField.string("chainpack-rpc-block.payload", "Payload")
+    payload = ProtoField.string("chainpack-rpc-block.payload", "Payload"),
+    meta_type_id = ProtoField.int32("chainpack-rpc-block.meta_type_id", "MetaTypeId", base.DEC),
+    request_id = ProtoField.int32("chainpack-rpc-block.request_id", "RequestId", base.DEC),
+    shv_path = ProtoField.string("chainpack-rpc-block.shv_path", "ShvPath"),
+    method_signal = ProtoField.string("chainpack-rpc-block.method_signal", "Method/Signal")
 }
 chainpack_proto.fields = fields
 
@@ -52,6 +56,22 @@ local function run_cp2cp(payload)
     os.remove(tmpfile)
 
     return output, exit_code
+end
+
+local function parse_angle_brackets(content, subtree)
+    local pattern = "(%d+):([^,]+)"
+    for attribute, value in content:gmatch(pattern) do
+        local attr_id = tonumber(attribute)
+        if attr_id == 1 then
+            subtree:add(fields.meta_type_id, tonumber(value))
+        elseif attr_id == 8 then
+            subtree:add(fields.request_id, tonumber(value))
+        elseif attr_id == 9 then
+            subtree:add(fields.shv_path, value)
+        elseif attr_id == 10 then
+            subtree:add(fields.method_signal, value)
+        end
+    end
 end
 
 local function dissect_chainpack_message(tvb, pinfo, tree)
@@ -92,6 +112,11 @@ local function dissect_chainpack_message(tvb, pinfo, tree)
     subtree_item:add(fields.payload_length, tvb(0, block_length - payload_length), payload_length)
     subtree_item:add(fields.protocol_type, tvb(block_length - payload_length, 1), protocol_type)
     subtree_item:add(fields.payload, tvb(block_length - payload_length + 1), payload_data)
+
+    local angle_brackets_content = payload_data:match("<([^>]+)>")
+    if angle_brackets_content then
+        parse_angle_brackets(angle_brackets_content, subtree_item)
+    end
 
     return block_length
 end
