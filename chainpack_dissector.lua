@@ -54,23 +54,24 @@ local function dissect_chainpack_message(tvb, pinfo, tree)
     local payload = tvb:bytes()
     local output, exit_code = run_cp2cp(payload)
 
+    -- Parse the cp2cp output
+    local lines = {}
+    for line in output:gmatch("[^\r\n]+") do
+        table.insert(lines, line)
+    end
+
     if exit_code == CP2CP_EXIT_CODES.UNRECOVERABLE_ERROR then
         tree:add_expert_info(PI_PROTOCOL, PI_WARN, "Unrecoverable error in message")
         return tvb:len()
     elseif exit_code == CP2CP_EXIT_CODES.NOT_ENOUGH_DATA then
-        return 0 -- Signal Wireshark to wait for more data
+        local block_length = tonumber(lines[1])
+        return 0, block_length
     elseif exit_code == CP2CP_EXIT_CODES.INTERNAL_ERROR then
         tree:add_expert_info(PI_PROTOCOL, PI_WARN, "Internal error in cp2cp")
         return 0
     elseif exit_code ~= CP2CP_EXIT_CODES.SUCCESS then
         tree:add_expert_info(PI_PROTOCOL, PI_WARN, "Unknown error")
         return 0
-    end
-
-    -- Parse the cp2cp output
-    local lines = {}
-    for line in output:gmatch("[^\r\n]+") do
-        table.insert(lines, line)
     end
 
     if #lines < 3 then
@@ -101,10 +102,11 @@ function chainpack_proto.dissector(tvb, pinfo, tree)
     -- Reassemble fragmented TCP segments
     local bytes_consumed = 0
     while bytes_consumed < tvb:len() do
-        local segment_length = dissect_chainpack_message(tvb(bytes_consumed):tvb(), pinfo, tree)
+        local input = tvb(bytes_consumed):tvb()
+        local segment_length, block_length = dissect_chainpack_message(input, pinfo, tree)
         if segment_length == 0 then
             -- Wait for more data
-            pinfo.desegment_len = DESEGMENT_ONE_MORE_SEGMENT
+            pinfo.desegment_len = block_length and block_length - input:len() or DESEGMENT_ONE_MORE_SEGMENT
             pinfo.desegment_offset = bytes_consumed
             return
         end
