@@ -1,3 +1,17 @@
+local function is_cp2cp_available()
+    local process = io.popen("which cp2cp 2>/dev/null", "r")
+    if not process then
+        return false
+    end
+    local result = process:read("*a")
+    process:close()
+    return result ~= nil and result:match("%S") ~= nil
+end
+
+if not is_cp2cp_available() then
+    error("cp2cp tool is not available in PATH. Please install or add it to PATH.")
+end
+
 -- Declare the Chainpack-RPC-Block protocol
 local chainpack_proto = Proto("chainpack-rpc-block", "Chainpack RPC Block Protocol")
 
