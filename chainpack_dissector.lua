@@ -107,15 +107,15 @@ local function dissect_chainpack_message(tvb, pinfo, tree)
     local protocol_type = lines[3]
     local payload_data = table.concat(lines, "\n", 4)
 
-    local subtree_item = tree:add(tvb(0, block_length), "Chainpack RPC Block Message")
-    subtree_item:add(fields.block_length, tvb(0, block_length), block_length)
-    subtree_item:add(fields.payload_length, tvb(0, block_length - payload_length), payload_length)
-    subtree_item:add(fields.protocol_type, tvb(block_length - payload_length, 1), protocol_type)
-    subtree_item:add(fields.payload, tvb(block_length - payload_length + 1), payload_data)
+    local block_subtree = tree:add(tvb(0, block_length), "Chainpack RPC Block Message")
+    block_subtree:add(fields.block_length, tvb(0, block_length), block_length)
+    block_subtree:add(fields.payload_length, tvb(0, block_length - payload_length), payload_length)
+    block_subtree:add(fields.protocol_type, tvb(block_length - payload_length, 1), protocol_type)
+    block_subtree:add(fields.payload, tvb(block_length - payload_length + 1), payload_data)
 
     local angle_brackets_content = payload_data:match("<([^>]+)>")
     if angle_brackets_content then
-        parse_angle_brackets(angle_brackets_content, subtree_item)
+        parse_angle_brackets(angle_brackets_content, block_subtree)
     end
 
     return block_length
