@@ -72,9 +72,10 @@ local function parse_angle_brackets(content, payload_subtree)
             rqid = tonumber(value)
             payload_subtree:add(fields.request_id, rqid)
         elseif attr_id == 9 then
-            payload_subtree:add(fields.shv_path, value)
+            local shv_path = value:sub(2, -2)
+            payload_subtree:add(fields.shv_path, shv_path)
         elseif attr_id == 10 then
-            method = value
+            method = value:sub(2, -2)
             payload_subtree:add(fields.method, method)
         end
     end
