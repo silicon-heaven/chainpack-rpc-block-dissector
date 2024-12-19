@@ -20,6 +20,7 @@ local fields = {
     payload_length = ProtoField.uint32("chainpack-rpc-block.payload_length", "Payload Length", base.DEC),
     protocol_type = ProtoField.string("chainpack-rpc-block.protocol_type", "Protocol Type"),
     payload = ProtoField.string("chainpack-rpc-block.payload", "Payload"),
+    message_type = ProtoField.string("chainpack-rpc-block.message_type", "Message Type"),
     meta_type_id = ProtoField.int32("chainpack-rpc-block.meta_type_id", "MetaTypeId", base.DEC),
     request_id = ProtoField.int32("chainpack-rpc-block.request_id", "RequestId", base.DEC),
     shv_path = ProtoField.string("chainpack-rpc-block.shv_path", "ShvPath"),
@@ -60,19 +61,34 @@ end
 
 local function parse_angle_brackets(content, payload_subtree)
     local pattern = "(%d+):([^,]+)"
+    local rqid = nil
+    local method = nil
 
     for attribute, value in content:gmatch(pattern) do
         local attr_id = tonumber(attribute)
         if attr_id == 1 then
             payload_subtree:add(fields.meta_type_id, tonumber(value))
         elseif attr_id == 8 then
+            rqid = value
             payload_subtree:add(fields.request_id, tonumber(value))
         elseif attr_id == 9 then
             payload_subtree:add(fields.shv_path, value)
         elseif attr_id == 10 then
+            method = value
             payload_subtree:add(fields.method_signal, value)
         end
     end
+
+    if rqid and method then
+        payload_subtree:set_text(string.format("RPC Request (%s)", rqid))
+    elseif rqid and not method then
+        payload_subtree:set_text(string.format("RPC Response (%s)", rqid))
+    elseif not rqid and method then
+        payload_subtree:set_text(string.format("RPC Signal (%s)", method))
+    else
+        payload_subtree:set_text("Unknown RPC message type")
+    end
+
 end
 
 local function dissect_chainpack_message(tvb, pinfo, tree)
@@ -118,6 +134,7 @@ local function dissect_chainpack_message(tvb, pinfo, tree)
     local angle_brackets_content = payload_data:match("<([^>]+)>")
     if angle_brackets_content then
         parse_angle_brackets(angle_brackets_content, payload_subtree)
+        payload_subtree:append_text(' ' .. payload_data)
     end
 
     return block_length
