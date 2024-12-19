@@ -24,7 +24,7 @@ local fields = {
     meta_type_id = ProtoField.int32("chainpack-rpc-block.meta_type_id", "MetaTypeId", base.DEC),
     request_id = ProtoField.int32("chainpack-rpc-block.request_id", "RequestId", base.DEC),
     shv_path = ProtoField.string("chainpack-rpc-block.shv_path", "ShvPath"),
-    method_signal = ProtoField.string("chainpack-rpc-block.method_signal", "Method/Signal")
+    method = ProtoField.string("chainpack-rpc-block.method", "Method")
 }
 chainpack_proto.fields = fields
 
@@ -69,13 +69,13 @@ local function parse_angle_brackets(content, payload_subtree)
         if attr_id == 1 then
             payload_subtree:add(fields.meta_type_id, tonumber(value))
         elseif attr_id == 8 then
-            rqid = value
-            payload_subtree:add(fields.request_id, tonumber(value))
+            rqid = tonumber(value)
+            payload_subtree:add(fields.request_id, rqid)
         elseif attr_id == 9 then
             payload_subtree:add(fields.shv_path, value)
         elseif attr_id == 10 then
             method = value
-            payload_subtree:add(fields.method_signal, value)
+            payload_subtree:add(fields.method, method)
         end
     end
 
