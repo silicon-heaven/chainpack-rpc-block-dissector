@@ -80,19 +80,19 @@ local function dissect_chainpack_message(tvb, pinfo, tree)
     end
 
     -- Extract fields from cp2cp output
-    local consumed_bytes = tonumber(lines[1])
+    local block_length = tonumber(lines[1])
     local payload_length = tonumber(lines[2])
     local protocol_type = lines[3]
     local payload_data = table.concat(lines, "\n", 4)
 
     -- Add fields to the protocol tree
-    local subtree_item = tree:add(tvb(0, consumed_bytes), "Chainpack RPC Block Message")
-    subtree_item:add(fields.block_length, tvb(0, consumed_bytes), consumed_bytes)
-    subtree_item:add(fields.payload_length, tvb(0, consumed_bytes - payload_length), payload_length)
-    subtree_item:add(fields.protocol_type, tvb(consumed_bytes - payload_length, 1), protocol_type)
-    subtree_item:add(fields.payload, tvb(consumed_bytes - payload_length + 1), payload_data)
+    local subtree_item = tree:add(tvb(0, block_length), "Chainpack RPC Block Message")
+    subtree_item:add(fields.block_length, tvb(0, block_length), block_length)
+    subtree_item:add(fields.payload_length, tvb(0, block_length - payload_length), payload_length)
+    subtree_item:add(fields.protocol_type, tvb(block_length - payload_length, 1), protocol_type)
+    subtree_item:add(fields.payload, tvb(block_length - payload_length + 1), payload_data)
 
-    return consumed_bytes
+    return block_length
 end
 
 -- Main dissector function
