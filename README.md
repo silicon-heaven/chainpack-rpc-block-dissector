@@ -5,4 +5,4 @@ This is a dissector for the block transport layer of SHV RPC as described [here]
 ### Manual
 Copy the dissector script into the Wireshark plugin directory as described [here](https://www.wireshark.org/docs/wsug_html_chunked/ChPluginFolders.html).
 ### AUR
-If you're using Arch Linux, there's an AUR package available: _TBD_
+If you're using Arch Linux, there's an AUR package available [here](https://aur.archlinux.org/packages/wireshark-chainpack-rpc-block-dissector-git).
