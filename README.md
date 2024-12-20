@@ -14,6 +14,9 @@ Make sure the cargo installation prefix is in your `PATH`.
 #### AUR
 If you're using Arch Linux, you can use the AUR package: https://aur.archlinux.org/packages/cp2cp-git.
 
+#### Download from libshvproto-rs CI
+Visit [libshvproto-rs](https://github.com/silicon-heaven/libshvproto-rs) project [Actions](https://github.com/silicon-heaven/libshvproto-rs/actions).
+
 #### Building manually
 ```
 git clone https://github.com/silicon-heaven/libshvproto-rs
