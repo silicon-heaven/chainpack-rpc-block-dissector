@@ -12,10 +12,10 @@ cargo install --git https://github.com/silicon-heaven/libshvproto-rs
 Make sure the cargo installation prefix is in your `PATH`.
 
 #### AUR
-If you're using Arch Linux, you can use the AUR package: https://aur.archlinux.org/packages/cp2cp-git.
+If you're using Arch Linux, you can use the AUR package [here](https://aur.archlinux.org/packages/cp2cp-git).
 
-#### Download from libshvproto-rs CI
-Visit [libshvproto-rs](https://github.com/silicon-heaven/libshvproto-rs) project [Actions](https://github.com/silicon-heaven/libshvproto-rs/actions).
+#### Download a nightly release
+There are nightly releases of cp2cp available [here](https://github.com/silicon-heaven/libshvproto-rs/releases/tag/nightly).
 
 #### Building manually
 ```
